@@ -14,8 +14,8 @@ options_netgear = {
 stream = cv2.VideoCapture(0)
 
 server = NetGear(
-    # address='192.168.11.145', # school network
-    address='192.168.11.137', # home network
+    address='192.168.11.145', # school network
+    # address='192.168.11.137', # home network
     port='5454',
     protocol='tcp',
     pattern=2,

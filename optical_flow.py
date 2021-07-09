@@ -11,8 +11,8 @@ options = {
 }
 
 client = NetGear(
-    # address='192.168.11.145', # school network
-    address='192.168.11.137', # home network
+    address='192.168.11.145', # school network
+    # address='192.168.11.137', # home network
     port='5454',
     pattern=2,
     receive_mode=True,
@@ -23,7 +23,7 @@ client = NetGear(
 
 feature_params=  dict(
     maxCorners=100,
-    qualityLevel=0.3,
+    qualityLevel=0.03,
     minDistance=7,
     blockSize=7
 )
