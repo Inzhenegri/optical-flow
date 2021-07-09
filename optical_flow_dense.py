@@ -1,6 +1,7 @@
 from vidgear.gears import NetGear
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 options = {
@@ -10,9 +11,9 @@ options = {
 }
 
 client = NetGear(
-    address='192.168.11.145', # school network
-    # address='192.168.11.137', # home network
-    port='5454',
+    # address='192.168.11.145', # school network
+    address='192.168.11.137', # home network
+    port='5555',
     pattern=2,
     receive_mode=True,
     logging=True,
@@ -24,7 +25,7 @@ frame1 = client.recv()
 prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
 
 hsv = np.zeros_like(a=frame1)
-hsv[..., 1] = 255
+hsv[..., 1] = 255 # 255 stands for green color
 
 
 def start():
@@ -48,6 +49,8 @@ def start():
             poly_sigma=1.2,
             flags=0
         )
+        dvx = -np.ma.average(a=flow[..., 0])
+        dvy = np.ma.average(a=flow[..., 1])
 
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         hsv[..., 0] = ang * 180 / np.pi / 2
@@ -62,7 +65,6 @@ def start():
             break
 
         prvs = next_frame
-        break
 
 
 start()
