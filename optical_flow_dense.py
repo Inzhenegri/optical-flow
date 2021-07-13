@@ -2,6 +2,12 @@ from vidgear.gears import NetGear
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import (
+    W,
+    SIZE,
+    my_line,
+    my_line_red
+)
 
 
 options = {
@@ -11,8 +17,8 @@ options = {
 }
 
 client = NetGear(
-    # address='192.168.11.145', # school network
-    address='192.168.11.137', # home network
+    address='192.168.11.145', # school network
+    # address='192.168.11.137', # home network
     port='5555',
     pattern=2,
     receive_mode=True,
@@ -21,12 +27,19 @@ client = NetGear(
     **options
 )
 
+
 frame1 = client.recv()
 prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+
+rook_image = np.zeros(SIZE, dtype=np.uint8)
+rook_window = 'Drawing 2: Rook'
 
 hsv = np.zeros_like(a=frame1)
 hsv[..., 1] = 255 # 255 stands for green color
 
+fig = plt.figure()
+ax1 = fig.add_subplot()
+plt.ion()
 
 def start():
     global prvs
@@ -51,6 +64,9 @@ def start():
         )
         dvx = -np.ma.average(a=flow[..., 0])
         dvy = np.ma.average(a=flow[..., 1])
+
+        my_line(img=rook_image, start=(200, 200), end=(200 + int((500 * dvx) // 10), 200 + int((500 * dvy) // 10)))
+        cv2.imshow(rook_window, rook_image)
 
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         hsv[..., 0] = ang * 180 / np.pi / 2
