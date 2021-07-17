@@ -7,6 +7,8 @@ import numpy as np
 from utils import (
     W,
     SIZE,
+    X_SHAPE,
+    Y_SHAPE,
     my_line,
     my_line_red
 )
@@ -86,10 +88,16 @@ def start():
         dvx = -np.ma.average(a=flow[..., 0])
         dvy = np.ma.average(a=flow[..., 1])
 
-        print(rook_image.shape)
-        my_line(img=rook_image, start=(350, 350), end=(350 + int((500 * dvx) // 10), 350 + int((500 * dvy) // 10)))
-        my_line(img=rook_image, start=(350, 350), end=(350, 350 + int((500 * dvy) // 10)))
-        my_line_red(img=rook_image, start=(350, 350), end=(350 + int((500 * dvx) // 10), 350))
+        rook_image = cv2.resize(src=rook_image, dsize=(X_SHAPE, Y_SHAPE), interpolation=cv2.INTER_AREA)
+        frame2 = cv2.resize(src=frame2, dsize=(X_SHAPE, Y_SHAPE), interpolation=cv2.INTER_AREA)
+
+        my_line(img=rook_image, start=(X_SHAPE - 50, Y_SHAPE - 50), end=(X_SHAPE - 50 + int((500 * dvx) // 10), Y_SHAPE - 50 + int((500 * dvy) // 10)))
+        my_line(img=rook_image, start=(X_SHAPE - 50, Y_SHAPE - 50), end=(X_SHAPE - 50, Y_SHAPE - 50 + int((500 * dvy) // 10)))
+        my_line_red(img=rook_image, start=(X_SHAPE - 50, Y_SHAPE - 50), end=(X_SHAPE - 50 + int((500 * dvx) // 10), Y_SHAPE - 50))
+
+        # add text
+        cv2.putText(img=rook_image, text='X', org=(X_SHAPE - 50, Y_SHAPE - 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, color=(255, 0, 0))
+        cv2.putText(img=rook_image, text='Y', org=(X_SHAPE - 60, Y_SHAPE - 60), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, color=(255, 0, 0))
 
 
         if rook_image is None:
@@ -99,8 +107,6 @@ def start():
 
         # blend images
         beta = (1.0 - alpha)
-
-        rook_image = cv2.resize(src=rook_image, dsize=(640, 480), interpolation=cv2.INTER_AREA)
 
         dst = cv2.addWeighted(src1=frame2, alpha=alpha, src2=rook_image, beta=beta, gamma=0.0, dst=rook_image)
         cv2.imshow('dst', dst)
@@ -115,8 +121,8 @@ def start():
 
         bgr = cv2.cvtColor(src=hsv, code=cv2.COLOR_HSV2BGR)
 
-        cv2.imshow('bgr', bgr)
-        cv2.imshow('frame', frame2)
+        # cv2.imshow('bgr', bgr)
+        # cv2.imshow('frame', frame2)
 
         key = cv2.waitKey(1)
         if key == ord('q'):

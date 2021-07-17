@@ -3,6 +3,8 @@ import cv2
 
 W = 400
 SIZE = (W, W, 3)
+X_SHAPE = 700
+Y_SHAPE = 540
 
 
 def my_line(img, start, end):
