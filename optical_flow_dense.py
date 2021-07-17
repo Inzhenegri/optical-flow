@@ -1,7 +1,9 @@
+import time
+
 from vidgear.gears import NetGear
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+
 from utils import (
     W,
     SIZE,
@@ -28,6 +30,11 @@ client = NetGear(
 )
 
 
+x = []
+y = []
+t = 0
+delta_time = 0
+
 frame1 = client.recv()
 prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
 
@@ -37,14 +44,28 @@ rook_window = 'Drawing 2: Rook'
 hsv = np.zeros_like(a=frame1)
 hsv[..., 1] = 255 # 255 stands for green color
 
-fig = plt.figure()
-ax1 = fig.add_subplot()
-plt.ion()
+print(''' Simple Linear Blender
+-----------------------
+* Enter alpha [0.0-1.0]: ''')
+
+alpha = None
+
 
 def start():
-    global prvs
+    global prvs, rook_image, delta_time, alpha
+
+    # input_alpha = float(input('your value: ').strip())
+    input_alpha = 0.5
+
+    i = 0
+
     while True:
+        start_time = time.time()
         frame2 = client.recv()
+
+        # alpha value
+        if 0 <= input_alpha <= 1:
+            alpha = input_alpha 
 
         if frame2 is None:
             break
@@ -65,8 +86,28 @@ def start():
         dvx = -np.ma.average(a=flow[..., 0])
         dvy = np.ma.average(a=flow[..., 1])
 
-        my_line(img=rook_image, start=(200, 200), end=(200 + int((500 * dvx) // 10), 200 + int((500 * dvy) // 10)))
-        cv2.imshow(rook_window, rook_image)
+        print(rook_image.shape)
+        my_line(img=rook_image, start=(350, 350), end=(350 + int((500 * dvx) // 10), 350 + int((500 * dvy) // 10)))
+        my_line(img=rook_image, start=(350, 350), end=(350, 350 + int((500 * dvy) // 10)))
+        my_line_red(img=rook_image, start=(350, 350), end=(350 + int((500 * dvx) // 10), 350))
+
+
+        if rook_image is None:
+            raise Exception('rook_image is None.')
+        if next_frame is None:
+            raise Exception('next_frame is None.')
+
+        # blend images
+        beta = (1.0 - alpha)
+
+        rook_image = cv2.resize(src=rook_image, dsize=(640, 480), interpolation=cv2.INTER_AREA)
+
+        dst = cv2.addWeighted(src1=frame2, alpha=alpha, src2=rook_image, beta=beta, gamma=0.0, dst=rook_image)
+        cv2.imshow('dst', dst)
+
+
+        if t > 10:
+            break
 
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         hsv[..., 0] = ang * 180 / np.pi / 2
@@ -74,12 +115,14 @@ def start():
 
         bgr = cv2.cvtColor(src=hsv, code=cv2.COLOR_HSV2BGR)
 
-        cv2.imshow('frame2', bgr)
+        cv2.imshow('bgr', bgr)
+        cv2.imshow('frame', frame2)
 
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
-
+        
+        rook_image = np.zeros(SIZE, dtype=np.uint8)
         prvs = next_frame
 
 
